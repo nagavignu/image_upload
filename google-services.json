@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "993959153580",
+    "project_id": "imageupload-5cb8b",
+    "storage_bucket": "imageupload-5cb8b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:993959153580:android:0123e4b186e8d470e53409",
+        "android_client_info": {
+          "package_name": "com.naga.imageupload"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "993959153580-o80cupoc6ff2o58rj14oqunhgkblaqvr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALTv8oNnzUm6HIlTQLGOJHDTbP_09_KjU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "993959153580-o80cupoc6ff2o58rj14oqunhgkblaqvr.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "993959153580-245drudv23uah4fj96suon8svg4emoml.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.naga.imageupload"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
