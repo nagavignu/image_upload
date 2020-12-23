@@ -5,7 +5,7 @@ import styles from './styles';
 import { navigate } from '../../navigationRef';
 import { firebase } from '../../firebase/config'
 
-export default SignupScreen = ({navigation}) => {
+export default SignupScreen = () => {
     const [fullName, setFullName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')

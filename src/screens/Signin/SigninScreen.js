@@ -28,8 +28,8 @@ export default SigninScreen = () => {
                             alert("User does not exist anymore.")
                             return;
                         }
-                        const user = firestoreDocument.data()
-                        navigate('Home', {user})
+                        const userData = firestoreDocument.data()
+                        navigate('Home', {userData})
                     })
                     .catch(error => {
                         alert(error)
@@ -47,7 +47,7 @@ export default SigninScreen = () => {
                 keyboardShouldPersistTaps="always">
                 <Image
                     style={styles.logo}
-                    source={require('../../../assets/logo.png')}
+                    source={require('../../../assets/logo_new.png')}
                 />
                 <TextInput
                     style={styles.input}

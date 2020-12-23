@@ -1,29 +1,39 @@
 import { StyleSheet } from 'react-native';
+import { WINDOW } from '../../config/constant';
 
 export default StyleSheet.create({
     container: {
         flex: 1,
         alignItems: 'center'
     },
+    rowContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
     formContainer: {
         flexDirection: 'row',
-        height: 80,
-        marginTop: 40,
-        marginBottom: 20,
+        marginTop: WINDOW.height / 10,
+        marginBottom: WINDOW.height / 25,
         flex: 1,
-        paddingTop: 10,
-        paddingBottom: 10,
-        paddingLeft: 30,
-        paddingRight: 30,
+        padding: 30,
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    browseBtn: {
+        height: 48,
+        borderRadius: 5,
+        overflow: 'hidden',
+        backgroundColor: 'red',
+        paddingLeft: 15,
+        marginRight: 5
     },
     input: {
         height: 48,
         borderRadius: 5,
         overflow: 'hidden',
         backgroundColor: 'white',
-        paddingLeft: 16,
+        paddingLeft: 15,
         flex: 1,
         marginRight: 5
     },
