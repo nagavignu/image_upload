@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { BTN_BG_COLOR , LINK_TEXT_COLOR, WINDOW} from '../../config/constant';
 
 export default StyleSheet.create({
     container: {
@@ -11,7 +12,9 @@ export default StyleSheet.create({
     logo: {
         flex: 1,
         alignSelf: "center",
-        margin: 30
+        margin: 30,
+        width: WINDOW.width / 2,
+        height: WINDOW.height / 5
     },
     input: {
         height: 48,
@@ -25,7 +28,7 @@ export default StyleSheet.create({
         paddingLeft: 16
     },
     button: {
-        backgroundColor: '#788eec',
+        backgroundColor: BTN_BG_COLOR,
         marginLeft: 30,
         marginRight: 30,
         marginTop: 20,
@@ -49,7 +52,7 @@ export default StyleSheet.create({
         color: '#2e2e2d'
     },
     footerLink: {
-        color: "#788eec",
+        color: LINK_TEXT_COLOR,
         fontWeight: "bold",
         fontSize: 16
     }

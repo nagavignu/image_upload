@@ -1,32 +1,59 @@
 import { StyleSheet } from 'react-native';
-import { WINDOW } from '../../config/constant';
+import { BTN_BG_COLOR, LINK_TEXT_COLOR, PLACEHOLDER_TEXT_COLOR, WINDOW } from '../../config/constant';
 
 export default StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: 'center'
+        alignItems: 'center',
+    },
+    iconContainer: {
+        width: 50
     },
     rowContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center'
+        backgroundColor: 'white',
+        width: WINDOW.width / 1.15,
+        borderRadius: 5,
+        margin: 1,
+        paddingHorizontal: 5,
+        paddingVertical: 10
+    },
+    subtitleContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between'
+    },
+    fileName: {
+        width: WINDOW.width / 1.5,
+        fontWeight: '600',
+        fontSize: 14
+    },
+    fileSize: {
+        fontSize: 12,
+        color: "grey",
+        fontWeight: '500'
+    },
+    fileDateTime: {
+        fontSize: 12,
+        color: "grey",
+        fontWeight: '500'
     },
     formContainer: {
         flexDirection: 'row',
-        marginTop: WINDOW.height / 10,
-        marginBottom: WINDOW.height / 25,
-        flex: 1,
         padding: 30,
-        justifyContent: 'center',
-        alignItems: 'center'
     },
     browseBtn: {
         height: 48,
+        width: WINDOW.width / 1.5,
         borderRadius: 5,
         overflow: 'hidden',
-        backgroundColor: 'red',
+        backgroundColor: 'white',
         paddingLeft: 15,
-        marginRight: 5
+        marginHorizontal: 5
+    },
+    browseBtnText: {
+        color: PLACEHOLDER_TEXT_COLOR,
+        marginTop: 15
     },
     input: {
         height: 48,
@@ -40,8 +67,8 @@ export default StyleSheet.create({
     button: {
         height: 47,
         borderRadius: 5,
-        backgroundColor: '#788eec',
-        width: 80,
+        backgroundColor: BTN_BG_COLOR,
+        width: WINDOW.width / 5,
         alignItems: "center",
         justifyContent: 'center'
     },
@@ -49,18 +76,13 @@ export default StyleSheet.create({
         color: 'white',
         fontSize: 16
     },
-    listContainer: {
-        marginTop: 20,
-        padding: 20,
+    logoutContainer: {
+        alignSelf: 'flex-end',
+        margin: 10
     },
-    entityContainer: {
-        marginTop: 16,
-        borderBottomColor: '#cccccc',
-        borderBottomWidth: 1,
-        paddingBottom: 16
-    },
-    entityText: {
-        fontSize: 20,
-        color: '#333333'
+    logoutText: {
+        color: LINK_TEXT_COLOR,
+        fontWeight: "bold",
+        fontSize: 16
     }
 })

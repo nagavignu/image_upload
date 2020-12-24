@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Alert, FlatList, Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Alert, FlatList, Image, Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import styles from './styles';
 import { firebase } from '../../firebase/config';
 import Constants from 'expo-constants';
@@ -7,11 +7,14 @@ import * as Permissions from 'expo-permissions';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import { MIME_TYPE_LIST } from '../../config/constant';
-import { Feather, AntDesign, FontAwesome, Entypo } from '@expo/vector-icons';
+import { Feather, AntDesign, FontAwesome, Entypo, Ionicons } from '@expo/vector-icons';
 import Swipeout from 'react-native-swipeout';
 import moment from 'moment';
 import { navigate } from '../../navigationRef';
 import * as Sharing from 'expo-sharing';
+import Loader from '../../components/LoaderComponent';
+import { Avatar, ListItem } from 'react-native-elements';
+
 
 export default HomeScreen = ({navigation}) => {
 
@@ -21,6 +24,7 @@ export default HomeScreen = ({navigation}) => {
     const [fileSize, setFileSize] = useState(null)
     const [fileExt, setFileExt] = useState(null)
     const [fileList, setFileList] = useState([])
+    const [loader, setLoader] = useState(false)
     const userId = navigation.state.params.userData.id ? navigation.state.params.userData.id : null
     const fileInfoRef = firebase.firestore().collection('fileInfo')
 
@@ -31,53 +35,68 @@ export default HomeScreen = ({navigation}) => {
     /**
      * Method to Handle the Upload process
      */
-    const onUploadPress = () => {
-        firebase
-            .storage()
-            .ref(fileName)
-            .put(fileUri)
-            .then((resp) => {
-                alert(`File has been uploaded successfully.`);
-                getFileUrl();
-            })
-            .catch((e) => console.log(e));
+    const onUploadPress = async () => {
+        setLoader(true)
+        try {
+            await firebase
+                .storage()
+                .ref(fileName)
+                .put(fileUri)
+                .then((resp) => {
+                    showAlert(`File has been uploaded successfully.`);
+                    getFileUrl();
+                })
+                .catch((e) => showAlert(e));
+        } catch (error) {
+            showAlert(error)
+        } finally {
+            setLoader(false)
+        }
     }
 
     /**
-     * Method to get the uploaded URL
+     * Method to get the uploaded file URL
      */
-    const getFileUrl = () => {
-        let fileRef = firebase.storage().ref('/' + fileName);
-        fileRef
-            .getDownloadURL()
-            .then((url) => {
-                // Add the file info to the store
-                addFileInfo(url)
-            })
-            .catch((e) => console.log('getting downloadURL of image error => ', e));
+    const getFileUrl = async () => {
+        try {
+            let fileRef = firebase.storage().ref('/' + fileName);
+            await fileRef
+                .getDownloadURL()
+                .then((url) => {
+                    // Add the file info to the store
+                    addFileInfo(url)
+                })
+                .catch((e) => showAlert(e));
+        } catch (error) {
+            showAlert(error)
+        }
     }
 
     /**
      * Method to Add the uploaded file info in the store
     */
-    const addFileInfo = (fileCloudUrl) => {
-        const data = {
-            userId: userId,
-            fileName,
-            fileUrl: fileCloudUrl,
-            fileSize,
-            fileExt,
-            dateTime: new Date(),
-            localUri: fileUri
+    const addFileInfo = async (fileCloudUrl) => {
+        try {
+            const data = {
+                userId: userId,
+                fileName,
+                fileUrl: fileCloudUrl,
+                fileSize,
+                fileExt,
+                dateTime: moment().format('MMM DD h:mm A'),
+                localUri: fileUri
+            }
+            await fileInfoRef
+                .add(data)
+                .then(resp => {
+                    resetFileInfo(); // Reset the chosen file details after upload
+                })
+                .catch(error => {
+                    alert(error)
+                });
+        } catch (error) {
+            showAlert(error)
         }
-        fileInfoRef
-            .add(data)
-            .then(resp => {
-                resetFileInfo(); // Reset the chosen file details after upload
-            })
-            .catch(error => {
-                alert(error)
-            });
     }
 
     /**
@@ -97,9 +116,9 @@ export default HomeScreen = ({navigation}) => {
                 const result = await DocumentPicker.getDocumentAsync({})
                 if (result.type === "success") {
                     if (!validateMimeType(result.uri.split(".").pop())) { // Mime type validation
-                        alert("Please Choose a Document as specified format")
+                        showAlert("Please Choose a Document as "+MIME_TYPE_LIST.join(","))
                     } else if (Math.round(result.size / 1024) > 2048) { // File size validation
-                        alert("Please Choose a Document less than 2MB")
+                        showAlert("Please Choose a Document less than 2MB")
                     } else {
                         setIsFileChosen(true)
                         setfileName(result.name)
@@ -109,11 +128,10 @@ export default HomeScreen = ({navigation}) => {
                     }
                 }
             } else {
-                alert('Sorry, we need camera roll permissions to make this work!');
+                showAlert('Sorry, we need camera roll permissions to make this work!');
             }
         } catch (e) {
-            console.log(e)
-            alert("Something went wrong with the File")
+            showAlert(e)
         }
     }
 
@@ -142,23 +160,30 @@ export default HomeScreen = ({navigation}) => {
     /**
      * Method to get the uploaded file list
      */
-    const getFileList = () => {
-        fileInfoRef
-            .where("userId", "==", userId)
-            .onSnapshot(
-                querySnapshot => {
-                    const files = []
-                    querySnapshot.forEach(doc => {
-                        const fileData = doc.data()
-                        fileData.id = doc.id
-                        files.push(fileData)
-                    });
-                    setFileList(files)
-                },
-                error => {
-                    console.log(error)
-                }
-            )
+    const getFileList = async () => {
+        setLoader(true)
+        try {
+            await fileInfoRef
+                .where("userId", "==", userId)
+                .onSnapshot(
+                    querySnapshot => {
+                        const files = []
+                        querySnapshot.forEach(doc => {
+                            const fileData = doc.data()
+                            fileData.id = doc.id
+                            files.push(fileData)
+                        });
+                        setFileList(files)
+                    },
+                    error => {
+                        console.log(error)
+                    }
+                )
+        } catch (error) {
+            showAlert(error)
+        } finally {
+            setLoader(false)
+        }
     }
 
     /**
@@ -172,8 +197,8 @@ export default HomeScreen = ({navigation}) => {
                 {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
                 {text: 'OK', onPress: async () => {
                     await fileInfoRef.doc(id).delete().then(resp => {
-                        alert("File has been deleted successfully.");
-                        getFileList();
+                        showAlert("File has been deleted successfully.");
+                        getFileList(); // Refresh the file list 
                     });
                 }},
             ],
@@ -189,7 +214,7 @@ export default HomeScreen = ({navigation}) => {
             await firebase.auth().signOut();
             navigate("Signin");
         } catch (error) {
-            alert(error)
+            showAlert(error)
         }
     }
 
@@ -197,13 +222,42 @@ export default HomeScreen = ({navigation}) => {
      * Method to do the image sharing process
      */
     const onShareImage = async (rowItem) => {
-        if (!(await Sharing.isAvailableAsync())) {
-          alert(`Sharing is not available on your platform`);
-          return;
+        setLoader(true)
+        try {
+            if (!(await Sharing.isAvailableAsync())) {
+                showAlert(`Sharing is not available on your platform`);
+                return;
+              }
+      
+              // Download the file and store into cache
+              let fileUri = FileSystem.cacheDirectory + rowItem.fileName;
+              await FileSystem.downloadAsync(rowItem.fileUrl, fileUri)
+              .then(async ({ uri }) => {
+                  await Sharing.shareAsync(rowItem.localUri); // Sharing the file into other app
+              })
+              .catch(error => {
+                  console.error(error);
+              })
+        } catch (error) {
+            showAlert(error)
+        } finally {
+            setLoader(false)
         }
-    
-        await Sharing.shareAsync(rowItem.localUri);
     };
+
+    /**
+     * Method to show the alert
+     */
+    const showAlert = async (message) => {
+        await Alert.alert(
+            'Alert',
+            message,
+            [
+                { text: 'OK' },
+            ],
+            { cancelable: true }
+        )
+    }
 
 
     /**
@@ -238,18 +292,23 @@ export default HomeScreen = ({navigation}) => {
         return (
             <Swipeout 
                 right={swipeBtns}
+                autoClose={false}
                 backgroundColor= 'transparent'>
                     <View style={styles.rowContainer}>
-                        <View>
-                            <FontAwesome size={24} name='image' color="black" />
+                        <View style={styles.iconContainer}>
+                            {(rowItem.fileExt == 'pdf' || rowItem.fileExt == 'pdf' || rowItem.fileExt == 'pdf') ? 
+                                <Ionicons size={36} name='document' color="grey" />
+                                :
+                                <FontAwesome size={36} name='image' color="grey" />
+                            }
                         </View>
                         <View>
                             <View>
-                                <Text>{rowItem.fileName}</Text>
+                                <Text style={styles.fileName} numberOfLines={1}>{rowItem.fileName}</Text>
                             </View>
-                            <View>
-                                <Text>{rowItem.fileSize ? (rowItem.fileSize / (1024 * 1024)).toFixed(2)+" MB" : "0 KB"}</Text>
-                                <Text>{ rowItem.dateTime+"---"+rowItem.dateTime ? moment(rowItem.dateTime).format("MMM DD, YYYY") : null }</Text>
+                            <View style={styles.subtitleContainer}>
+                                <Text style={styles.fileSize}>{rowItem.fileSize ? (rowItem.fileSize / (1024 * 1024)).toFixed(2)+" MB" : "0 KB"}</Text>
+                                <Text style={styles.fileDateTime}>{ rowItem.dateTime ? moment(rowItem.dateTime).format('MMM DD h:mm A') : null }</Text>
                             </View>
                         </View>
                     </View>
@@ -260,36 +319,30 @@ export default HomeScreen = ({navigation}) => {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity onPress={onLogoutPress}>
-                <Text>Logout</Text>
-            </TouchableOpacity>
+            <Loader loading={loader} />
+            <View style={styles.logoutContainer}>
+                <Text onPress={onLogoutPress} style={styles.logoutText}>Logout</Text>
+                {/* <TouchableOpacity style={styles.button} onPress={onLogoutPress}>
+                    <Text style={styles.buttonText}>Logout</Text>
+                </TouchableOpacity> */}
+            </View>
+            
             <View style={styles.formContainer}>
-                {/* <TouchableOpacity style={styles.browseBtn} onPress={ onBrowseFile }> */}
-                    <TextInput
-                        style={styles.input}
-                        placeholder='Choose file name'
-                        placeholderTextColor="#aaaaaa"
-                        value={fileName}
-                        underlineColorAndroid="transparent"
-                        autoCapitalize="none"
-                        editable={false}
-                        onFocus={onBrowseFile}
-                    />
-                {/* </TouchableOpacity> */}
-                <TouchableOpacity style={styles.button} onPress={ isFileChosen ? onUploadPress : onBrowseFile }>
+                <TouchableOpacity style={styles.browseBtn} onPress={ onBrowseFile }>
+                    <Text style={styles.browseBtnText} numberOfLines={1}>{isFileChosen ? fileName : `Choose file`}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity disabled={isFileChosen ? false : true} style={[styles.button, !isFileChosen ? {backgroundColor: 'grey'} : {}]} onPress={ onUploadPress }>
                     <Text style={styles.buttonText}>{ "Upload" }</Text>
                 </TouchableOpacity>
             </View>
             { fileList && (
-                <View style={styles.listContainer}>
-                    <FlatList
-                        data={ fileList }
-                        renderItem={({item, index}) => 
-                            <SwipoutElement rowItem={item} rowIndex={index} />
-                        } 
-                        keyExtractor={item => item.id.toString()}
-                    />
-                </View>
+                <FlatList
+                    data={ fileList }
+                    renderItem={({item, index}) => 
+                        <SwipoutElement rowItem={item} rowIndex={index} />
+                    } 
+                    keyExtractor={item => item.id.toString()}
+                />
             )}
         </View>
     )
